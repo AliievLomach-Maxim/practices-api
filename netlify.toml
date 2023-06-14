@@ -1,0 +1,4 @@
+
+
+[context.production]
+  publish = "index.js"
