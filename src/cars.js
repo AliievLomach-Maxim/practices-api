@@ -3,6 +3,10 @@ import { client } from './dbconnect.js'
 import { ObjectId } from 'mongodb'
 import bcrypt from 'bcrypt'
 
+export const test = (req, res) => {
+	res.json(`<h1>Test</h1>`)
+}
+
 export const getCars = (req, res) => {
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 10
