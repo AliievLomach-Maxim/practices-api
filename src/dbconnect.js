@@ -1,5 +1,8 @@
-import { uri } from '../secret.js'
 import { MongoClient, ServerApiVersion } from 'mongodb'
+import dotenv from 'dotenv'
+dotenv.config()
+
+const uri = process.env.URI
 
 export const client = new MongoClient(uri, {
 	serverApi: {
