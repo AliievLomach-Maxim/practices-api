@@ -5,14 +5,14 @@ import authMiddleware from './src/middleware/authMiddleware.js'
 import { getCars, addCar, test } from './src/cars.js'
 import { login } from './src/auth.js'
 
+const PORT = process.env.PORT || 3333
+
 const app = express()
 app.use(cors())
 app.options('*', cors())
 
 app.use(passport.initialize())
 authMiddleware(passport)
-
-const PORT = 3333
 
 app.use(express.json())
 
