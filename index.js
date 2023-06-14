@@ -1,13 +1,13 @@
 import express from 'express'
-// import cors from 'cors'
+import cors from 'cors'
 import passport from 'passport'
 import authMiddleware from './src/middleware/authMiddleware.js'
 import { getCars, addCar } from './src/cars.js'
 import { login } from './src/auth.js'
 
 const app = express()
-// app.use(cors())
-// app.options('*', cors())
+app.use(cors())
+app.options('*', cors())
 
 app.use(passport.initialize())
 authMiddleware(passport)
