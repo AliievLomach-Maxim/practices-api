@@ -3,9 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// const uri = process.env.URI
-const uri =
-	'mongodb+srv://alievlomachmaxim:v0h8346ri932RKx0@cluster0.4zcn3wh.mongodb.net/?retryWrites=true&w=majority'
+const uri = process.env.URI
 
 export const client = new MongoClient(uri, {
 	serverApi: {
