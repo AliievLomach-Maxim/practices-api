@@ -1,4 +1,7 @@
-
+[build]
+  command = "echo Hello"
 
 [context.production]
+  command = "npm run start"
   publish = "index.js"
+
