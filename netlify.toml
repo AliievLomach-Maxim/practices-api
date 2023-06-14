@@ -1,6 +1,0 @@
-
-
-[context.production]
-  command = "npm run start"
-  publish = "index.js"
-  environment = { URI = "mongodb+srv://alievlomachmaxim:v0h8346ri932RKx0@cluster0.4zcn3wh.mongodb.net/?retryWrites=true&w=majority", NODE_VERSION = "18.12.1" }
