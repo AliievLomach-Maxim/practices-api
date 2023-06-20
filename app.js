@@ -1,26 +1,32 @@
 import express from 'express'
 import cors from 'cors'
 import passport from 'passport'
+import swaggerUi from 'swagger-ui-express'
+
+import swaggerSpec from './swaggerConfig.js'
+import usersRoutes from './src/routes/users.js'
+import authRoutes from './src/routes/auth.js'
+import postsRoutes from './src/routes/posts.js'
+import commentsRoutes from './src/routes/comments.js'
 import authMiddleware from './src/middleware/authMiddleware.js'
-import { getCars, addCar, test } from './src/cars.js'
-import { login } from './src/auth.js'
 
 const PORT = process.env.PORT || 3333
 
 const app = express()
+
 app.use(cors())
 app.options('*', cors())
+app.use(express.json())
 
 app.use(passport.initialize())
 authMiddleware(passport)
 
-app.use(express.json())
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
-app.get('/test', test)
-app.get('/users', passport.authenticate('jwt', { session: false }), getCars)
-app.post('/auth', login)
-
-app.post('/users', addCar)
+app.use('/auth', authRoutes)
+app.use('/users', usersRoutes)
+app.use('/posts', postsRoutes)
+app.use('/comments', commentsRoutes)
 
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`)

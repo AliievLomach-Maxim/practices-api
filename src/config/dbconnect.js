@@ -3,8 +3,6 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-// const uri = process.env.URI
-
 export const client = new MongoClient(process.env.URI, {
 	serverApi: {
 		version: ServerApiVersion.v1,

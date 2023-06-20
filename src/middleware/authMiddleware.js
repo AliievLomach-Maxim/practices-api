@@ -1,6 +1,15 @@
 import { Strategy as JwtStrategy } from 'passport-jwt'
 import { ExtractJwt } from 'passport-jwt'
-import { client } from '../dbconnect.js'
+import { client } from '../config/dbconnect.js'
+import jwt from 'jsonwebtoken'
+
+export const generateAccessToken = (id, email) => {
+	const payload = {
+		userId: id,
+		email: email,
+	}
+	return jwt.sign(payload, 'Hello', { expiresIn: '1d' })
+}
 
 const options = {
 	jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
