@@ -1,8 +1,41 @@
 import { ObjectId } from 'mongodb'
 import { client } from '../config/dbconnect.js'
 import { validateFields } from '../helpers/validateFields.js'
+import { handleBadRequest } from '../hendlers/badRequest.js'
 
 export const addComments = (req, res) => {
+	/* 
+	#swagger.tags = ['Comments']
+	#swagger.summary = 'Create comment'
+	#swagger.description = 'Create comment'
+	#swagger.security = [{
+               "bearerAuth": []
+        }] 
+	#swagger.parameters['body'] = {
+		in: 'body',
+		required: true,
+		description: 'Adding new comment.',
+		schema: {
+			body: 'text comment',
+			userId: 'user ID'
+		}
+	}
+	#swagger.responses[401] = {
+		description: 'Unauthorized',
+    }
+	#swagger.responses[200] = {
+		description: 'Comment successfully obtained.',
+		schema:{ message: 'Added successfully' }
+    }
+	#swagger.responses[400] = {
+		description: 'Bad request',
+		schema:
+		{
+			error: 'Validation errors', 
+			missingFields:['missingFields'] 
+		}
+    } 
+	*/
 	const fieldDefinitions = [
 		{ field: 'body', type: 'string', required: true },
 		{ field: 'userId', type: 'string', required: true },
@@ -48,6 +81,16 @@ export const addComments = (req, res) => {
 }
 
 export const getComments = (req, res) => {
+	/* 
+	#swagger.tags = ['Comments']
+	#swagger.summary = 'Get All comments'
+	#swagger.description = 'Get All comments'
+	
+	#swagger.responses[200] = {
+		description: 'Comments successfully obtained.',
+		schema:{ $ref: '#/definitions/Comments' }
+    }
+	*/
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 100
 
@@ -79,6 +122,21 @@ export const getComments = (req, res) => {
 }
 
 export const getComment = (req, res) => {
+	/* 
+	#swagger.tags = ['Comments']
+	#swagger.summary = 'Get comment'
+	#swagger.description = 'Get comment'
+
+	#swagger.responses[200] = {
+		description: 'Comment successfully obtained.',
+		schema:{ $ref: '#/definitions/Comment' }
+    }
+
+	#swagger.responses[404] = {
+		description: 'Comment not found',
+		schema:{ message: 'Comment not found' }
+    }
+	*/
 	client.connect(async (err) => {
 		if (err) {
 			res.status(500).send(err)
@@ -89,18 +147,34 @@ export const getComment = (req, res) => {
 		try {
 			const comment = await collection.findOne({ _id: ObjectId(id) })
 			if (!comment) {
-				return res.json({ message: 'Comment not found' })
+				return res.status(404).json({ message: 'Comment not found' })
 			}
 
 			res.json(comment)
 			client.close()
 		} catch (error) {
-			res.status(400).json({ message: 'Some error...' })
+			handleBadRequest(error, res)
 		}
 	})
 }
 
 export const getCommentsByIdPost = (req, res) => {
+	/* 
+	#swagger.tags = ['Comments']
+	#swagger.summary = 'Get All comments by Post ID '
+	#swagger.description = 'Get All comments by Post ID '
+
+	#swagger.parameters['id'] = {
+		in: 'path',
+		description: 'Post ID',
+		required: true,
+		type: 'string'
+	}
+	#swagger.responses[200] = {
+		description: 'Post Comments obtained.',
+		schema:{ $ref: '#/definitions/CommentsByIdPost' }
+    }
+	*/
 	client.connect(async (err) => {
 		if (err) {
 			res.status(500).send(err)
@@ -119,10 +193,56 @@ export const getCommentsByIdPost = (req, res) => {
 					client.close()
 				})
 		} catch (error) {
-			res.status(400).json({
-				message: 'Some error...',
-				error: error.message,
-			})
+			handleBadRequest(error, res)
 		}
+	})
+}
+
+export const deleteComment = (req, res) => {
+	/*
+  #swagger.tags = ['Comments']
+  #swagger.summary = 'Delete comment'
+  #swagger.description = 'Delete comment'
+  #swagger.security = [{
+           "bearerAuth": []
+    }]
+  #swagger.parameters['commentId'] = {
+    in: 'path',
+    required: true,
+    description: 'ID of the comment to delete',
+    type: 'string'
+  }
+  #swagger.responses[401] = {
+    description: 'Unauthorized',
+  }
+  #swagger.responses[200] = {
+    description: 'Comment successfully deleted.',
+    schema: { message: 'Deleted successfully' }
+  }
+  #swagger.responses[404] = {
+    description: 'Comment not found',
+    schema: { message: 'Comment not found' }
+  }
+  */
+
+	const commentId = req.params.commentId
+
+	client.connect(async (err) => {
+		if (err) {
+			res.status(500).send(err)
+			return
+		}
+
+		const collection = client.db('practices').collection('comments')
+
+		const result = await collection.deleteOne({ _id: ObjectId(commentId) })
+
+		if (result.deletedCount === 1) {
+			res.status(200).json({ message: 'Deleted successfully' })
+		} else {
+			res.status(404).json({ message: 'Comment not found' })
+		}
+
+		client.close()
 	})
 }

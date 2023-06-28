@@ -3,8 +3,43 @@ import { client } from '../config/dbconnect.js'
 import { generateAccessToken } from '../middleware/authMiddleware.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { getRandomAvatar } from '../config/avatars.js'
+import { handleBadRequest } from '../hendlers/badRequest.js'
 
 export const login = (req, res) => {
+	/* 
+	#swagger.tags = ['Auth']
+	#swagger.summary = 'Login'
+	#swagger.description = 'Login'
+	#swagger.parameters['body'] = {
+		in: 'body',
+		description: 'Login',
+		schema: {
+			email: 'example@example.com',
+			password: 'password'
+		}
+	}
+	#swagger.responses[200] = {
+		description: 'Post successfully obtained.',
+		schema: {
+				token:'token',
+				statusMessage: 'log in successfully',
+				user: {$ref: '#/definitions/User' }
+			}
+    }
+	#swagger.responses[403] = {
+		description: 'Bad request',
+		schema:
+		{ error: 'Email or password error' }
+    } 
+	#swagger.responses[400] = {
+		description: 'Bad request',
+		schema:
+		{
+			error: 'Validation errors', 
+			missingFields:['missingFields'] 
+		}
+    } 
+	*/
 	const fieldDefinitions = [
 		{ field: 'email', type: 'string', required: true },
 		{ field: 'password', type: 'string', required: true },
@@ -26,24 +61,22 @@ export const login = (req, res) => {
 		const collection = client.db('practices').collection('users')
 		try {
 			const user = await collection.findOne({ email })
-			if (!user) {
-				return res.json({ error: 'Email or password error' })
-			}
-
-			const validPassword = bcrypt.compareSync(password, user.password)
-			if (!validPassword) {
-				return res.json({ error: 'Email or password error' })
+			if (!user || !bcrypt.compareSync(password, user.password)) {
+				return res
+					.status(403)
+					.json({ error: 'Email or password error' })
 			}
 
 			const token = generateAccessToken(user.userId, user.email)
 			return res.json({
 				token,
-				statusCode: 200,
-				statusMessage: 'log in successfully',
+				user,
+				statusMessage: 'Log in successfully',
 			})
 		} catch (error) {
+			handleBadRequest(error, res)
 			res.status(400).json({
-				errorMessage: 'Some error...',
+				errorMessage: 'Bad request',
 				error: error.message,
 			})
 		}
@@ -51,6 +84,43 @@ export const login = (req, res) => {
 }
 
 export const signUp = (req, res) => {
+	/* 
+	#swagger.tags = ['Auth']
+	#swagger.summary = 'Sign Up'
+	#swagger.description = 'Sign Up'
+	#swagger.parameters['body'] = {
+		in: 'body',
+		description: 'Login',
+		schema: {
+			firstName: 'Jhon Doe',
+			email: 'example@example.com',
+			password: 'password'
+		}
+	}
+	
+	#swagger.responses[200] = {
+		description: 'User successfully obtained.',
+		schema: 
+			{ 
+				statusMessage: 'sign up successfully',
+				token:'token',
+				user: {$ref: '#/definitions/User' }
+			}
+    }
+	#swagger.responses[403] = {
+		description: 'User with this email already exists',
+		schema:
+			{ error: 'User with this email already exists' }
+    } 
+	#swagger.responses[400] = {
+		description: 'Bad request',
+		schema:
+		{
+			error: 'Validation errors', 
+			missingFields:['missingFields'] 
+		}
+    } 
+	*/
 	const fieldDefinitions = [
 		{ field: 'firstName', type: 'string', required: true },
 		{ field: 'email', type: 'string', required: true },
@@ -106,7 +176,6 @@ export const signUp = (req, res) => {
 			const token = generateAccessToken(userData.userId, userData.email)
 
 			return res.json({
-				statusCode: 200,
 				statusMessage: 'sign up successfully',
 				token,
 				user: userData,

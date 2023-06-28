@@ -4,6 +4,7 @@ import {
 	addComments,
 	getComments,
 	getComment,
+	deleteComment,
 } from '../controllers/comments.js'
 
 const router = express.Router()
@@ -14,6 +15,11 @@ router.post(
 	'/add/:id',
 	passport.authenticate('jwt', { session: false }),
 	addComments
+)
+router.delete(
+	'/:id',
+	passport.authenticate('jwt', { session: false }),
+	deleteComment
 )
 
 export default router
