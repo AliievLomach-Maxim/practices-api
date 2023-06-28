@@ -12,16 +12,17 @@ import commentsRoutes from './src/routes/comments.js'
 import authMiddleware from './src/middleware/authMiddleware.js'
 
 const PORT = process.env.PORT || 3333
-// const swaggerFile = JSON.parse(fs.readFileSync('./src/swagger/output.json'))
+
 const swaggerFilePath = path.resolve(process.cwd(), './src/swagger/output.json')
 const swaggerFile = JSON.parse(fs.readFileSync(swaggerFilePath))
+
 const app = express()
 
 const CSS_URL =
 	'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css'
 
-app.use(cors())
-app.options('*', cors())
+// app.use(cors())
+// app.options('*', cors())
 app.use(express.json())
 
 app.use(passport.initialize())
