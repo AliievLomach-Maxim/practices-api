@@ -100,7 +100,7 @@ const doc = {
 
 // const endpointsFiles = [join(_dirname, '../../app.js')]
 
-const outputFilePath = join(process.cwd(), 'swagger', 'output.json')
+const outputFilePath = join(process.cwd(), 'src/swagger', 'output.json')
 const endpointsFiles = [join(process.cwd(), 'app.js')]
 
 swaggerAutogen()(outputFilePath, endpointsFiles, doc)
