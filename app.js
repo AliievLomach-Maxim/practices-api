@@ -17,6 +17,9 @@ const swaggerFilePath = path.resolve(process.cwd(), './src/swagger/output.json')
 const swaggerFile = JSON.parse(fs.readFileSync(swaggerFilePath))
 const app = express()
 
+const CSS_URL =
+	'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css'
+
 app.use(cors())
 app.options('*', cors())
 app.use(express.json())
@@ -24,7 +27,11 @@ app.use(express.json())
 app.use(passport.initialize())
 authMiddleware(passport)
 
-app.use('/api-doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
+app.use(
+	'/api-doc',
+	swaggerUi.serve,
+	swaggerUi.setup(swaggerFile, { customCssUrl: CSS_URL })
+)
 
 app.use('/auth', authRoutes)
 app.use('/users', usersRoutes)
