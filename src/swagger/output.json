@@ -5,10 +5,10 @@
     "version": "1.0.0",
     "description": "API documentation using Swagger"
   },
-  "host": "localhost:3333",
+  "host": "practices-api.vercel.app/",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "securityDefinitions": {
     "bearerAuth": {

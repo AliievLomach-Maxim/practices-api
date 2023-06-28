@@ -3,6 +3,8 @@ import { join } from 'path'
 // import { fileURLToPath } from 'url'
 import swaggerAutogen from 'swagger-autogen'
 
+const isLocalhost = process.env.NODE_ENV === 'development'
+
 // const _dirname = dirname(fileURLToPath(import.meta.url))
 
 const doc = {
@@ -94,7 +96,8 @@ const doc = {
 	},
 	// host: 'localhost:3333',
 	host: isLocalhost ? 'localhost:3333' : 'practices-api.vercel.app/',
-	schemes: ['http'],
+	// schemes: ['http'],
+	schemes: isLocalhost ? ['http'] : ['https'],
 }
 
 // const outputFile = join(_dirname, 'output.json')
