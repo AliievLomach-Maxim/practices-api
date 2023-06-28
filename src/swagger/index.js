@@ -95,7 +95,7 @@ const doc = {
 		},
 	},
 	// host: 'localhost:3333',
-	host: isLocalhost ? 'localhost:3333' : 'practices-api.vercel.app/',
+	host: isLocalhost ? 'localhost:3333' : 'practices-api.vercel.app',
 	// schemes: ['http'],
 	schemes: isLocalhost ? ['http'] : ['https'],
 }
