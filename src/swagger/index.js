@@ -1,8 +1,9 @@
-import { join, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { join } from 'path'
+// import { join, dirname } from 'path'
+// import { fileURLToPath } from 'url'
 import swaggerAutogen from 'swagger-autogen'
 
-const _dirname = dirname(fileURLToPath(import.meta.url))
+// const _dirname = dirname(fileURLToPath(import.meta.url))
 
 const doc = {
 	info: {
@@ -95,10 +96,21 @@ const doc = {
 	schemes: ['http'],
 }
 
-const outputFile = join(_dirname, 'output.json')
+// const outputFile = join(_dirname, 'output.json')
 
-const endpointsFiles = [join(_dirname, '../../app.js')]
+// const endpointsFiles = [join(_dirname, '../../app.js')]
 
-swaggerAutogen(outputFile, endpointsFiles, doc).then(({ success }) => {
-	console.log(`Generated: ${success}`)
-})
+const outputFilePath = join(process.cwd(), 'swagger', 'output.json')
+const endpointsFiles = [join(process.cwd(), 'app.js')]
+
+swaggerAutogen()(outputFilePath, endpointsFiles, doc)
+	.then(() => {
+		console.log('Swagger JSON file has been generated successfully.')
+	})
+	.catch((error) => {
+		console.error('Error generating Swagger JSON file:', error)
+	})
+
+// swaggerAutogen(outputFile, endpointsFiles, doc).then(({ success }) => {
+// 	console.log(`Generated: ${success}`)
+// })
