@@ -13,7 +13,7 @@ import authMiddleware from './src/middleware/authMiddleware.js'
 
 const PORT = process.env.PORT || 3333
 // const swaggerFile = JSON.parse(fs.readFileSync('./src/swagger/output.json'))
-const swaggerFilePath = path.resolve(__dirname, './src/swagger/output.json')
+const swaggerFilePath = path.resolve(process.cwd(), './src/swagger/output.json')
 const swaggerFile = JSON.parse(fs.readFileSync(swaggerFilePath))
 const app = express()
 
