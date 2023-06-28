@@ -11,7 +11,7 @@ import commentsRoutes from './src/routes/comments.js'
 import authMiddleware from './src/middleware/authMiddleware.js'
 
 const PORT = process.env.PORT || 3333
-const swaggerFile = JSON.parse(fs.readFileSync('./swagger/output.json'))
+const swaggerFile = JSON.parse(fs.readFileSync('./src/swagger/output.json'))
 const app = express()
 
 app.use(cors())

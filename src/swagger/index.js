@@ -97,7 +97,7 @@ const doc = {
 
 const outputFile = join(_dirname, 'output.json')
 
-const endpointsFiles = [join(_dirname, '../app.js')]
+const endpointsFiles = [join(_dirname, '../../app.js')]
 
 swaggerAutogen(outputFile, endpointsFiles, doc).then(({ success }) => {
 	console.log(`Generated: ${success}`)
