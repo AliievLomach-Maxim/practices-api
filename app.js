@@ -3,6 +3,7 @@ import cors from 'cors'
 import passport from 'passport'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
+import path from 'path'
 
 import usersRoutes from './src/routes/users.js'
 import authRoutes from './src/routes/auth.js'
@@ -11,7 +12,9 @@ import commentsRoutes from './src/routes/comments.js'
 import authMiddleware from './src/middleware/authMiddleware.js'
 
 const PORT = process.env.PORT || 3333
-const swaggerFile = JSON.parse(fs.readFileSync('./src/swagger/output.json'))
+// const swaggerFile = JSON.parse(fs.readFileSync('./src/swagger/output.json'))
+const swaggerFilePath = path.resolve(__dirname, './src/swagger/output.json')
+const swaggerFile = JSON.parse(fs.readFileSync(swaggerFilePath))
 const app = express()
 
 app.use(cors())
