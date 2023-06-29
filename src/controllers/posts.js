@@ -203,7 +203,7 @@ export const getPostsByIdUser = (req, res) => {
 		const collection = client.db('practices').collection('posts')
 
 		try {
-			collection.find({ userId: id }).toArray((err, posts) => {
+			collection.find({ userId: ObjectId(id) }).toArray((err, posts) => {
 				if (err) res.status(404).json({ message: 'Posts not found' })
 				if (posts) res.json({ posts })
 				client.close()

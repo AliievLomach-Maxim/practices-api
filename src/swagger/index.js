@@ -1,11 +1,7 @@
 import { join } from 'path'
-// import { join, dirname } from 'path'
-// import { fileURLToPath } from 'url'
 import swaggerAutogen from 'swagger-autogen'
 
 const isLocalhost = process.env.NODE_ENV === 'development'
-
-// const _dirname = dirname(fileURLToPath(import.meta.url))
 
 const doc = {
 	info: {
@@ -94,15 +90,9 @@ const doc = {
 			],
 		},
 	},
-	// host: 'localhost:3333',
 	host: isLocalhost ? 'localhost:3333' : 'practices-api.vercel.app',
-	// schemes: ['http'],
 	schemes: isLocalhost ? ['http'] : ['https'],
 }
-
-// const outputFile = join(_dirname, 'output.json')
-
-// const endpointsFiles = [join(_dirname, '../../app.js')]
 
 const outputFilePath = join(process.cwd(), 'src/swagger', 'output.json')
 const endpointsFiles = [join(process.cwd(), 'app.js')]
@@ -114,7 +104,3 @@ swaggerAutogen()(outputFilePath, endpointsFiles, doc)
 	.catch((error) => {
 		console.error('Error generating Swagger JSON file:', error)
 	})
-
-// swaggerAutogen(outputFile, endpointsFiles, doc).then(({ success }) => {
-// 	console.log(`Generated: ${success}`)
-// })

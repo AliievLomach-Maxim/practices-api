@@ -21,8 +21,6 @@ const app = express()
 const CSS_URL =
 	'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css'
 
-// app.use(cors())
-// app.options('*', cors())
 app.use((req, res, next) => {
 	res.setHeader('Access-Control-Allow-Origin', '*')
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
