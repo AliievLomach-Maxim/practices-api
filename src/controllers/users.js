@@ -48,6 +48,11 @@ export const getUsers = (req, res) => {
   #swagger.tags = ['Users']
   #swagger.summary = 'Get All users'
   #swagger.description = 'Get All users'
+  #swagger.parameters['name'] = {
+	in: 'query',
+	description: 'Search by user name',
+	type: 'string'
+	}
   #swagger.responses[200] = {
     description: 'User successfully obtained.',
     schema: { $ref: '#/definitions/Users' }
