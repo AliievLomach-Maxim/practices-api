@@ -5,17 +5,56 @@ import { getRandomAvatar } from '../config/avatars.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
 
+// export const getUsers = (req, res) => {
+// 	/*
+// 	#swagger.tags = ['Users']
+// 	#swagger.summary = 'Get All users'
+// 	#swagger.description = 'Get All users'
+// 	#swagger.responses[200] = {
+// 		description: 'User successfully obtained.',
+// 		schema: { $ref: '#/definitions/Users' }
+//     } */
+// 	const page = parseInt(req.query.page) || 1
+// 	const limit = parseInt(req.query.limit) || 100
+
+// 	client.connect((err) => {
+// 		if (err) {
+// 			res.status(500).send(err)
+// 			return
+// 		}
+// 		const collection = client.db('practices').collection('users')
+// 		collection.countDocuments({}, (err, total) => {
+// 			if (err) {
+// 				res.status(500).json({ error: 'An error occurred' })
+// 				return
+// 			}
+// 			const totalPages = Math.ceil(total / limit)
+// 			const skip = (page - 1) * limit
+
+// 			collection
+// 				.find()
+// 				.skip(skip)
+// 				.limit(limit)
+// 				.toArray((err, users) => {
+// 					if (err) res.status(500).send(err)
+// 					if (users) res.json({ users, page, totalPages, total })
+// 					client.close()
+// 				})
+// 		})
+// 	})
+// }
 export const getUsers = (req, res) => {
 	/* 
-	#swagger.tags = ['Users']
-	#swagger.summary = 'Get All users'
-	#swagger.description = 'Get All users'
-	#swagger.responses[200] = {
-		description: 'User successfully obtained.',
-		schema: { $ref: '#/definitions/Users' }
-    } */
+  #swagger.tags = ['Users']
+  #swagger.summary = 'Get All users'
+  #swagger.description = 'Get All users'
+  #swagger.responses[200] = {
+    description: 'User successfully obtained.',
+    schema: { $ref: '#/definitions/Users' }
+  } */
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 100
+	const name = req.query.name
 
 	client.connect((err) => {
 		if (err) {
@@ -23,7 +62,13 @@ export const getUsers = (req, res) => {
 			return
 		}
 		const collection = client.db('practices').collection('users')
-		collection.countDocuments({}, (err, total) => {
+		const query = {}
+
+		if (name) {
+			query.name = { $regex: name, $options: 'i' }
+		}
+
+		collection.countDocuments(query, (err, total) => {
 			if (err) {
 				res.status(500).json({ error: 'An error occurred' })
 				return
@@ -32,7 +77,7 @@ export const getUsers = (req, res) => {
 			const skip = (page - 1) * limit
 
 			collection
-				.find()
+				.find(query)
 				.skip(skip)
 				.limit(limit)
 				.toArray((err, users) => {
