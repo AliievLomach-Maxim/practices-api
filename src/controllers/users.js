@@ -49,17 +49,27 @@ export const getUsers = (req, res) => {
   #swagger.summary = 'Get All users'
   #swagger.description = 'Get All users'
   #swagger.parameters['name'] = {
-	in: 'query',
-	description: 'Search by user name',
-	type: 'string'
-	}
+    in: 'query',
+    description: 'Search by user first name',
+    type: 'string'
+  }
+  #swagger.parameters['page'] = {
+    in: 'query',
+    description: 'Page number',
+    type: 'integer'
+  }
+  #swagger.parameters['limit'] = {
+    in: 'query',
+    description: 'Number of items per page',
+    type: 'integer'
+  }
   #swagger.responses[200] = {
     description: 'User successfully obtained.',
     schema: { $ref: '#/definitions/Users' }
   } */
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 100
-	const name = req.query.name
+	const firstName = req.query.name || ''
 
 	client.connect((err) => {
 		if (err) {
@@ -67,11 +77,9 @@ export const getUsers = (req, res) => {
 			return
 		}
 		const collection = client.db('practices').collection('users')
-		const query = {}
-
-		if (name) {
-			query.name = { $regex: name, $options: 'i' }
-		}
+		const query = firstName
+			? { firstName: { $regex: firstName, $options: 'i' } }
+			: {}
 
 		collection.countDocuments(query, (err, total) => {
 			if (err) {
