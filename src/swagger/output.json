@@ -222,14 +222,22 @@
         "description": "Get All users",
         "parameters": [
           {
+            "name": "name",
+            "in": "query",
+            "description": "Search by user first name",
+            "type": "string"
+          },
+          {
             "name": "page",
             "in": "query",
-            "type": "string"
+            "description": "Page number",
+            "type": "integer"
           },
           {
             "name": "limit",
             "in": "query",
-            "type": "string"
+            "description": "Number of items per page",
+            "type": "integer"
           }
         ],
         "responses": {
