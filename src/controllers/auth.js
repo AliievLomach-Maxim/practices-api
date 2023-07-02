@@ -83,7 +83,7 @@ export const login = (req, res) => {
 	})
 }
 
-export const signUp = (req, res) => {
+export const signUp = async (req, res) => {
 	/* 
 	#swagger.tags = ['Auth']
 	#swagger.summary = 'Sign Up'
@@ -127,59 +127,53 @@ export const signUp = (req, res) => {
 		{ field: 'password', type: 'string', required: true },
 	]
 	try {
-		client.connect(async (err) => {
-			if (err) {
-				res.status(500).send(err)
-				return
-			}
+		await client.connect()
 
-			const user = req.body
-			if (Object.keys(user).length === 0) {
-				res.status(400).json({ error: 'No data provided' })
-				return
-			}
+		const user = req.body
+		if (Object.keys(user).length === 0) {
+			return res.status(400).json({ error: 'No data provided' })
+		}
 
-			const missingFields = validateFields(req.body, fieldDefinitions)
-			if (missingFields.length > 0) {
-				return res
-					.status(400)
-					.json({ error: 'Validation errors', missingFields })
-			}
+		const missingFields = validateFields(req.body, fieldDefinitions)
+		if (missingFields.length > 0) {
+			return res
+				.status(400)
+				.json({ error: 'Validation errors', missingFields })
+		}
 
-			const saltRounds = 10
-			const hashedPassword = bcrypt.hashSync(user.password, saltRounds)
+		const saltRounds = 10
+		const hashedPassword = bcrypt.hashSync(user.password, saltRounds)
 
-			const newUser = {
-				lastName: undefined,
-				gender: undefined,
-				phone: undefined,
-				image: getRandomAvatar(),
-				...user,
-				password: hashedPassword,
-			}
+		const newUser = {
+			lastName: undefined,
+			gender: undefined,
+			phone: undefined,
+			image: getRandomAvatar(),
+			...user,
+			password: hashedPassword,
+		}
 
-			const collection = client.db('practices').collection('users')
+		const collection = client.db('practices').collection('users')
 
-			const existingUser = await collection.findOne({ email: user.email })
-			if (existingUser) {
-				return res
-					.status(403)
-					.json({ error: 'User with this email already exists' })
-			}
+		const existingUser = await collection.findOne({ email: user.email })
+		if (existingUser) {
+			return res
+				.status(403)
+				.json({ error: 'User with this email already exists' })
+		}
 
-			const insertResult = await collection.insertOne(newUser)
+		const insertResult = await collection.insertOne(newUser)
 
-			const userData = await collection.findOne({
-				_id: insertResult.insertedId,
-			})
+		const userData = await collection.findOne({
+			_id: insertResult.insertedId,
+		})
 
-			const token = generateAccessToken(userData.userId, userData.email)
+		const token = generateAccessToken(userData.userId, userData.email)
 
-			return res.json({
-				statusMessage: 'sign up successfully',
-				token,
-				user: userData,
-			})
+		return res.json({
+			statusMessage: 'sign up successfully',
+			token,
+			user: userData,
 		})
 	} catch (err) {
 		res.status(500).send(err)
