@@ -169,6 +169,34 @@ export const signUp = async (req, res) => {
 }
 
 export const refreshToken = async (req, res) => {
+	/* 
+  #swagger.tags = ['Auth']
+  #swagger.summary = 'Refresh Token'
+  #swagger.description = 'Refreshes the access token'
+  #swagger.responses[200] = {
+    description: 'Token successfully refreshed.',
+    schema: {
+      token: 'new_token',
+      statusMessage: 'refresh successfully',
+      user: {$ref: '#/definitions/User'}
+    }
+  }
+  #swagger.responses[400] = {
+    description: 'Invalid Token',
+    schema: {
+      error: 'Invalid Token'
+    }
+  }
+  #swagger.responses[500] = {
+    description: 'Server error',
+    schema: {
+      error: 'Server error'
+    }
+  }
+ 	#swagger.security = [{
+               "bearerAuth": []
+        }] 
+  */
 	const authorizationHeader = req.headers.authorization
 
 	if (!authorizationHeader) {

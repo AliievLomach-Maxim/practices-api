@@ -212,7 +212,11 @@
     },
     "/auth/refresh": {
       "get": {
-        "description": "",
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh Token",
+        "description": "Refreshes the access token",
         "parameters": [
           {
             "name": "authorization",
@@ -222,18 +226,66 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Token successfully refreshed.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string",
+                  "example": "new_token"
+                },
+                "statusMessage": {
+                  "type": "string",
+                  "example": "refresh successfully"
+                },
+                "user": {
+                  "$ref": "#/definitions/User"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Invalid Token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Invalid Token"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           },
           "401": {
             "description": "Unauthorized"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Server error",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "example": "Server error"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/users/": {

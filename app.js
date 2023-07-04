@@ -33,14 +33,15 @@ app.use(express.json())
 app.use(passport.initialize())
 authMiddleware(passport)
 
+app.get('/', (req, res) => {
+	// #swagger.ignore = true
+	res.sendFile(path.resolve(process.cwd(), './public/index.html'))
+})
 app.use(
 	'/api-doc',
 	swaggerUi.serve,
 	swaggerUi.setup(swaggerFile, { customCssUrl: CSS_URL })
 )
-app.get('/', (req, res) => {
-	res.sendFile(path.resolve(process.cwd(), './public/index.html'))
-})
 app.use('/auth', authRoutes)
 app.use('/users', usersRoutes)
 app.use('/posts', postsRoutes)
