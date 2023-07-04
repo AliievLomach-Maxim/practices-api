@@ -1,4 +1,4 @@
-import { db } from '../config/dbconnect.js'
+import { db } from '../../app.js'
 import { ObjectId } from 'mongodb'
 import bcrypt from 'bcrypt'
 import { getRandomAvatar } from '../config/avatars.js'

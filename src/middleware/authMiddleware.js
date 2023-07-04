@@ -1,6 +1,6 @@
 import { Strategy as JwtStrategy } from 'passport-jwt'
 import { ExtractJwt } from 'passport-jwt'
-import { db } from '../config/dbconnect.js'
+import { db } from '../../app.js'
 import jwt from 'jsonwebtoken'
 
 export const generateAccessToken = (id, email) => {

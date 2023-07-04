@@ -10,21 +10,3 @@ export const client = new MongoClient(process.env.URI, {
 		deprecationErrors: true,
 	},
 })
-
-let db
-
-async function run() {
-	try {
-		const conn = await client.connect()
-		await client.db('admin').command({ ping: 1 })
-
-		console.log('You successfully connected to MongoDB!')
-		db = conn.db('practices')
-	} catch (error) {
-		client.close()
-		console.log(error)
-	}
-}
-run()
-
-export { db }

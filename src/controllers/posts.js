@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { db } from '../config/dbconnect.js'
+import { db } from '../../app.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
 
 export const addPost = async (req, res) => {

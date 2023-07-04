@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { db } from '../config/dbconnect.js'
+import { db } from '../../app.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
 

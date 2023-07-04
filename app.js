@@ -9,6 +9,7 @@ import authRoutes from './src/routes/auth.js'
 import postsRoutes from './src/routes/posts.js'
 import commentsRoutes from './src/routes/comments.js'
 import authMiddleware from './src/middleware/authMiddleware.js'
+import { client } from './src/config/dbconnect.js'
 
 const PORT = process.env.PORT || 3333
 
@@ -47,6 +48,24 @@ app.use('/users', usersRoutes)
 app.use('/posts', postsRoutes)
 app.use('/comments', commentsRoutes)
 
-app.listen(PORT, () => {
-	console.log(`Server is running on port ${PORT}`)
-})
+let db
+
+async function run() {
+	try {
+		const conn = await client.connect()
+		await client.db('admin').command({ ping: 1 })
+
+		console.log('You successfully connected to MongoDB!')
+		db = conn.db('practices')
+
+		app.listen(PORT, () => {
+			console.log(`Server is running on port ${PORT}`)
+		})
+	} catch (error) {
+		client.close()
+		console.log(error)
+	}
+}
+run()
+
+export { db }

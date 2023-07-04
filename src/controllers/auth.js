@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { db } from '../config/dbconnect.js'
+import { db } from '../../app.js'
 import { generateAccessToken } from '../middleware/authMiddleware.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { getRandomAvatar } from '../config/avatars.js'
