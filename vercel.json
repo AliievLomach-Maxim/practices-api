@@ -2,6 +2,5 @@
 	"version": 2,
 	"name": "music-album",
 	"builds": [{ "src": "app.js", "use": "@vercel/node" }],
-	"routes": [{ "src": "/(.*)", "dest": "/app.js" }],
-	"rewrites": [{ "source": "/", "destination": "/public/$1" }]
+	"routes": [{ "src": "/(.*)", "dest": "/app.js" }]
 }
