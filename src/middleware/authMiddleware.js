@@ -8,7 +8,7 @@ export const generateAccessToken = (id, email) => {
 		userId: id,
 		email: email,
 	}
-	return jwt.sign(payload, 'Hello', { expiresIn: '1m' })
+	return jwt.sign(payload, 'Hello', { expiresIn: '1d' })
 }
 
 const options = {
