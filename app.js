@@ -1,5 +1,4 @@
 import express from 'express'
-import cors from 'cors'
 import passport from 'passport'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
@@ -20,6 +19,8 @@ const app = express()
 
 const CSS_URL =
 	'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css'
+
+app.use(express.static('public'))
 
 app.use((req, res, next) => {
 	res.setHeader('Access-Control-Allow-Origin', '*')

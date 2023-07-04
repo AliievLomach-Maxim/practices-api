@@ -107,9 +107,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -213,6 +210,32 @@
         }
       }
     },
+    "/auth/refresh": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/users/": {
       "get": {
         "tags": [
@@ -246,9 +269,6 @@
             "schema": {
               "$ref": "#/definitions/Users"
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
@@ -360,9 +380,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [
@@ -427,9 +444,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
@@ -469,10 +483,6 @@
                     "female",
                     "other"
                   ]
-                },
-                "email": {
-                  "type": "string",
-                  "example": "example@example.com"
                 },
                 "phone": {
                   "type": "string",
@@ -528,24 +538,6 @@
           },
           "401": {
             "description": "Unauthorized"
-          },
-          "403": {
-            "description": "User with this email already exists",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "User with this email already exists"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [
@@ -602,9 +594,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [
@@ -669,9 +658,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
@@ -850,9 +836,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
@@ -904,9 +887,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [
@@ -941,9 +921,6 @@
           },
           "400": {
             "description": "Bad Request"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
@@ -1016,9 +993,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       },
@@ -1076,9 +1050,6 @@
                 "name": "main"
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         },
         "security": [

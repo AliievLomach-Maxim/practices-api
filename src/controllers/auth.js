@@ -1,11 +1,12 @@
 import bcrypt from 'bcrypt'
-import { client } from '../config/dbconnect.js'
+import { db } from '../config/dbconnect.js'
 import { generateAccessToken } from '../middleware/authMiddleware.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { getRandomAvatar } from '../config/avatars.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
+import jwt from 'jsonwebtoken'
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
 	/* 
 	#swagger.tags = ['Auth']
 	#swagger.summary = 'Login'
@@ -44,12 +45,7 @@ export const login = (req, res) => {
 		{ field: 'email', type: 'string', required: true },
 		{ field: 'password', type: 'string', required: true },
 	]
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
+	try {
 		const missingFields = validateFields(req.body, fieldDefinitions)
 		if (missingFields.length > 0) {
 			return res
@@ -58,29 +54,23 @@ export const login = (req, res) => {
 		}
 
 		const { email, password } = req.body
-		const collection = client.db('practices').collection('users')
-		try {
-			const user = await collection.findOne({ email })
-			if (!user || !bcrypt.compareSync(password, user.password)) {
-				return res
-					.status(403)
-					.json({ error: 'Email or password error' })
-			}
 
-			const token = generateAccessToken(user.userId, user.email)
-			return res.json({
-				token,
-				user,
-				statusMessage: 'Log in successfully',
-			})
-		} catch (error) {
-			handleBadRequest(error, res)
-			res.status(400).json({
-				errorMessage: 'Bad request',
-				error: error.message,
-			})
+		const collection = await db.collection('users')
+
+		const user = await collection.findOne({ email })
+		if (!user || !bcrypt.compareSync(password, user.password)) {
+			return res.status(403).json({ error: 'Email or password error' })
 		}
-	})
+
+		const token = generateAccessToken(user.userId, user.email)
+		return res.json({
+			token,
+			user,
+			statusMessage: 'Log in successfully',
+		})
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
 export const signUp = async (req, res) => {
@@ -127,8 +117,6 @@ export const signUp = async (req, res) => {
 		{ field: 'password', type: 'string', required: true },
 	]
 	try {
-		await client.connect()
-
 		const user = req.body
 		if (Object.keys(user).length === 0) {
 			return res.status(400).json({ error: 'No data provided' })
@@ -153,7 +141,7 @@ export const signUp = async (req, res) => {
 			password: hashedPassword,
 		}
 
-		const collection = client.db('practices').collection('users')
+		const collection = await db.collection('users')
 
 		const existingUser = await collection.findOne({ email: user.email })
 		if (existingUser) {
@@ -177,7 +165,47 @@ export const signUp = async (req, res) => {
 		})
 	} catch (err) {
 		res.status(500).send(err)
-	} finally {
-		client.close()
 	}
+}
+
+export const refreshToken = async (req, res) => {
+	const authorizationHeader = req.headers.authorization
+
+	if (!authorizationHeader) {
+		return res.status(401).json({ error: 'Authorization header missing' })
+	}
+
+	try {
+		const token = authorizationHeader.split(' ')[1]
+
+		const email = getUserEmailFromToken(authorizationHeader)
+
+		const collection = await db.collection('users')
+
+		const user = await collection.findOne({ email })
+		if (!user) {
+			return res.status(401).json({ error: 'Invalid token' })
+		}
+
+		const newToken = generateAccessToken(user._id, email)
+
+		return res.json({
+			token: newToken,
+			statusMessage: 'refresh successfully',
+			user,
+		})
+	} catch (error) {
+		console.log('error :>> ', error.message)
+		return error.message === 'jwt expired'
+			? res.status(400).json({ error: 'Invalid Token' })
+			: res.status(500).json({ error: 'Server error' })
+	}
+}
+
+const getUserEmailFromToken = (authorizationHeader) => {
+	const token = authorizationHeader.split(' ')[1]
+	const decodedToken = jwt.verify(token, 'Hello')
+	const userEmail = decodedToken.email
+
+	return userEmail
 }

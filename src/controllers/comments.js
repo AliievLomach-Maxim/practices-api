@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
-import { client } from '../config/dbconnect.js'
+import { db } from '../config/dbconnect.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
 
-export const addComments = (req, res) => {
+export const addComments = async (req, res) => {
 	/* 
 	#swagger.tags = ['Comments']
 	#swagger.summary = 'Create comment'
@@ -40,12 +40,7 @@ export const addComments = (req, res) => {
 		{ field: 'body', type: 'string', required: true },
 		{ field: 'userId', type: 'string', required: true },
 	]
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
+	try {
 		const postId = req.params.id
 		const comment = req.body
 		if (Object.keys(comment).length === 0) {
@@ -60,7 +55,8 @@ export const addComments = (req, res) => {
 				.json({ error: 'Validation errors', missingFields })
 		}
 
-		const collectionUsers = client.db('practices').collection('users')
+		const collectionUsers = await db.collection('users')
+
 		const user = await collectionUsers.findOne({
 			_id: ObjectId(comment.userId),
 		})
@@ -71,16 +67,18 @@ export const addComments = (req, res) => {
 			image: user.image,
 			userId: user._id,
 		}
-		const collection = client.db('practices').collection('comments')
+		const collection = await db.collection('comments')
+
 		collection.insertOne({ ...comment, postId, creator }, (err, result) => {
 			if (err) res.status(500).send(err)
 			if (result) res.status(200).json({ message: 'Added successfully' })
-			client.close()
 		})
-	})
+	} catch (error) {
+		res.status(500).send(err)
+	}
 }
 
-export const getComments = (req, res) => {
+export const getComments = async (req, res) => {
 	/* 
 	#swagger.tags = ['Comments']
 	#swagger.summary = 'Get All comments'
@@ -94,12 +92,9 @@ export const getComments = (req, res) => {
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 100
 
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-		const collection = client.db('practices').collection('comments')
+	try {
+		const collection = await db.collection('comments')
+
 		collection.countDocuments({}, (err, total) => {
 			if (err) {
 				res.status(500).json({ error: 'An error occurred' })
@@ -115,13 +110,14 @@ export const getComments = (req, res) => {
 				.toArray((err, comments) => {
 					if (err) res.status(500).send(err)
 					if (comments) res.json({ comments, page, totalPages })
-					client.close()
 				})
 		})
-	})
+	} catch (error) {
+		res.status(500).send(err)
+	}
 }
 
-export const getComment = (req, res) => {
+export const getComment = async (req, res) => {
 	/* 
 	#swagger.tags = ['Comments']
 	#swagger.summary = 'Get comment'
@@ -137,28 +133,22 @@ export const getComment = (req, res) => {
 		schema:{ message: 'Comment not found' }
     }
 	*/
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
+	try {
 		const { id } = req.params
-		const collection = client.db('practices').collection('comments')
-		try {
-			const comment = await collection.findOne({ _id: ObjectId(id) })
-			if (!comment) {
-				return res.status(404).json({ message: 'Comment not found' })
-			}
+		const collection = await db.collection('comments')
 
-			res.json(comment)
-			client.close()
-		} catch (error) {
-			handleBadRequest(error, res)
+		const comment = await collection.findOne({ _id: ObjectId(id) })
+		if (!comment) {
+			return res.status(404).json({ message: 'Comment not found' })
 		}
-	})
+
+		res.json(comment)
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const getCommentsByIdPost = (req, res) => {
+export const getCommentsByIdPost = async (req, res) => {
 	/* 
 	#swagger.tags = ['Comments']
 	#swagger.summary = 'Get All comments by Post ID '
@@ -175,30 +165,20 @@ export const getCommentsByIdPost = (req, res) => {
 		schema:{ $ref: '#/definitions/CommentsByIdPost' }
     }
 	*/
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
+	try {
 		const { id } = req.params
-		const collection = client.db('practices').collection('comments')
+		const collection = await db.collection('comments')
 
-		try {
-			collection
-				.find({ postId: ObjectId(id) })
-				.toArray((err, comments) => {
-					if (err) res.status(400).json({ message: err.message })
-					if (comments) res.json({ comments })
-					client.close()
-				})
-		} catch (error) {
-			handleBadRequest(error, res)
-		}
-	})
+		collection.find({ postId: ObjectId(id) }).toArray((err, comments) => {
+			if (err) res.status(400).json({ message: err.message })
+			if (comments) res.json({ comments })
+		})
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const deleteComment = (req, res) => {
+export const deleteComment = async (req, res) => {
 	/*
   #swagger.tags = ['Comments']
   #swagger.summary = 'Delete comment'
@@ -227,13 +207,8 @@ export const deleteComment = (req, res) => {
 
 	const commentId = req.params.commentId
 
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
-		const collection = client.db('practices').collection('comments')
+	try {
+		const collection = await db.collection('comments')
 
 		const result = await collection.deleteOne({ _id: ObjectId(commentId) })
 
@@ -242,7 +217,7 @@ export const deleteComment = (req, res) => {
 		} else {
 			res.status(404).json({ message: 'Comment not found' })
 		}
-
-		client.close()
-	})
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }

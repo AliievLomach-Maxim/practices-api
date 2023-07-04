@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
-import { client } from '../config/dbconnect.js'
+import { db } from '../config/dbconnect.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
 
-export const addPost = (req, res) => {
+export const addPost = async (req, res) => {
 	/* 
 	#swagger.tags = ['Posts']
 	#swagger.summary = 'Create post'
@@ -45,12 +45,8 @@ export const addPost = (req, res) => {
 		{ field: 'body', type: 'string', required: true },
 		{ field: 'title', type: 'string', required: true },
 	]
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
 
+	try {
 		const missingFields = validateFields(req.body, fieldDefinitions)
 		if (missingFields.length > 0) {
 			return res
@@ -65,19 +61,21 @@ export const addPost = (req, res) => {
 			return
 		}
 
-		const collection = client.db('practices').collection('posts')
+		const collection = await db.collection('posts')
+
 		collection.insertOne(
 			{ ...post, userId: ObjectId(userId) },
 			(err, result) => {
 				if (err) res.status(500).send(err)
 				if (result) res.json({ message: 'Post added successfully' })
-				client.close()
 			}
 		)
-	})
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const getPosts = (req, res) => {
+export const getPosts = async (req, res) => {
 	/* 
 	#swagger.tags = ['Posts']
 	#swagger.summary = 'Get All posts'
@@ -90,34 +88,28 @@ export const getPosts = (req, res) => {
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 100
 
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-		const collection = client.db('practices').collection('posts')
-		collection.countDocuments({}, (err, total) => {
-			if (err) {
-				res.status(500).json({ error: 'An error occurred' })
-				return
-			}
-			const totalPages = Math.ceil(total / limit)
-			const skip = (page - 1) * limit
+	try {
+		const collection = await db.collection('posts')
 
-			collection
-				.find()
-				.skip(skip)
-				.limit(limit)
-				.toArray((err, posts) => {
-					if (err) res.status(500).send(err)
-					if (posts) res.json({ posts, page, totalPages })
-					client.close()
-				})
-		})
-	})
+		const total = await collection.countDocuments({})
+
+		const totalPages = Math.ceil(total / limit)
+		const skip = (page - 1) * limit
+
+		collection
+			.find()
+			.skip(skip)
+			.limit(limit)
+			.toArray((err, posts) => {
+				if (err) res.status(500).send(err)
+				if (posts) res.json({ posts, page, totalPages })
+			})
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const getPost = (req, res) => {
+export const getPost = async (req, res) => {
 	/* 
 	#swagger.tags = ['Posts']
 	#swagger.summary = 'Get post'
@@ -142,32 +134,27 @@ export const getPost = (req, res) => {
 			}
     } 
 	*/
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
+	try {
 		const { id } = req.params
-		const collection = client.db('practices').collection('posts')
-		try {
-			const post = await collection.findOne({ _id: ObjectId(id) })
-			if (!post) {
-				return res.status(404).json({ message: 'Post not found' })
-			}
-			const collectionUsers = client.db('practices').collection('users')
-			const user = await collectionUsers.findOne({
-				_id: ObjectId(post.userId),
-			})
+		const collection = await db.collection('posts')
 
-			res.json({ ...post, userName: user.firstName })
-			client.close()
-		} catch (error) {
-			handleBadRequest(error, res)
+		const post = await collection.findOne({ _id: ObjectId(id) })
+		if (!post) {
+			return res.status(404).json({ message: 'Post not found' })
 		}
-	})
+		const collectionUsers = await db.collection('users')
+
+		const user = await collectionUsers.findOne({
+			_id: ObjectId(post.userId),
+		})
+
+		res.json({ ...post, userName: user.firstName })
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const getPostsByIdUser = (req, res) => {
+export const getPostsByIdUser = async (req, res) => {
 	/* 
 	#swagger.tags = ['Posts']
 	#swagger.summary = 'Get All posts by ID User'
@@ -193,28 +180,18 @@ export const getPostsByIdUser = (req, res) => {
 			}
     } 
 	*/
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
+	try {
 		const { id } = req.params
-		const collection = client.db('practices').collection('posts')
+		const collection = await db.collection('posts')
 
-		try {
-			collection.find({ userId: ObjectId(id) }).toArray((err, posts) => {
-				if (err) res.status(404).json({ message: 'Posts not found' })
-				if (posts) res.json({ posts })
-				client.close()
-			})
-		} catch (error) {
-			handleBadRequest(error, res)
-		}
-	})
+		const posts = collection.find({ userId: ObjectId(id) }).toArray()
+		res.json({ posts })
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const deletePost = (req, res) => {
+export const deletePost = async (req, res) => {
 	/* 
   #swagger.tags = ['Posts']
   #swagger.summary = 'Delete post'
@@ -245,28 +222,23 @@ export const deletePost = (req, res) => {
   } 
   */
 
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
+	try {
+		const collection = await db.collection('posts')
 
-		const collection = client.db('practices').collection('posts')
-		collection.deleteOne(
-			{ _id: ObjectId(req.params.id) },
-			(err, result) => {
-				if (err) res.status(500).send(err)
-				if (result.deletedCount === 0) {
-					res.status(404).json({
-						message: 'Post not found',
-					})
-				} else {
-					res.json({
-						message: 'Post deleted successfully',
-					})
-				}
-				client.close()
-			}
-		)
-	})
+		const result = await collection.deleteOne({
+			_id: ObjectId(req.params.id),
+		})
+
+		if (result.deletedCount === 0) {
+			return res.status(404).json({
+				message: 'Post not found',
+			})
+		} else {
+			res.json({
+				message: 'Post deleted successfully',
+			})
+		}
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }

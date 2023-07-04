@@ -11,15 +11,20 @@ export const client = new MongoClient(process.env.URI, {
 	},
 })
 
+let db
+
 async function run() {
 	try {
-		await client.connect()
+		const conn = await client.connect()
 		await client.db('admin').command({ ping: 1 })
-		console.log(
-			'Pinged your deployment. You successfully connected to MongoDB!'
-		)
-	} finally {
-		await client.close()
+
+		console.log('You successfully connected to MongoDB!')
+		db = conn.db('practices')
+	} catch (error) {
+		client.close()
+		console.log(error)
 	}
 }
-run().catch(console.dir)
+run()
+
+export { db }

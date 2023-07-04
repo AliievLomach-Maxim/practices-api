@@ -1,49 +1,11 @@
-import { client } from '../config/dbconnect.js'
+import { db } from '../config/dbconnect.js'
 import { ObjectId } from 'mongodb'
 import bcrypt from 'bcrypt'
 import { getRandomAvatar } from '../config/avatars.js'
 import { validateFields } from '../helpers/validateFields.js'
 import { handleBadRequest } from '../hendlers/badRequest.js'
 
-// export const getUsers = (req, res) => {
-// 	/*
-// 	#swagger.tags = ['Users']
-// 	#swagger.summary = 'Get All users'
-// 	#swagger.description = 'Get All users'
-// 	#swagger.responses[200] = {
-// 		description: 'User successfully obtained.',
-// 		schema: { $ref: '#/definitions/Users' }
-//     } */
-// 	const page = parseInt(req.query.page) || 1
-// 	const limit = parseInt(req.query.limit) || 100
-
-// 	client.connect((err) => {
-// 		if (err) {
-// 			res.status(500).send(err)
-// 			return
-// 		}
-// 		const collection = client.db('practices').collection('users')
-// 		collection.countDocuments({}, (err, total) => {
-// 			if (err) {
-// 				res.status(500).json({ error: 'An error occurred' })
-// 				return
-// 			}
-// 			const totalPages = Math.ceil(total / limit)
-// 			const skip = (page - 1) * limit
-
-// 			collection
-// 				.find()
-// 				.skip(skip)
-// 				.limit(limit)
-// 				.toArray((err, users) => {
-// 					if (err) res.status(500).send(err)
-// 					if (users) res.json({ users, page, totalPages, total })
-// 					client.close()
-// 				})
-// 		})
-// 	})
-// }
-export const getUsers = (req, res) => {
+export const getUsers = async (req, res) => {
 	/* 
   #swagger.tags = ['Users']
   #swagger.summary = 'Get All users'
@@ -70,39 +32,30 @@ export const getUsers = (req, res) => {
 	const page = parseInt(req.query.page) || 1
 	const limit = parseInt(req.query.limit) || 100
 	const firstName = req.query.name || ''
+	try {
+		const collection = await db.collection('users')
 
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-		const collection = client.db('practices').collection('users')
 		const query = firstName
 			? { firstName: { $regex: firstName, $options: 'i' } }
 			: {}
 
-		collection.countDocuments(query, (err, total) => {
-			if (err) {
-				res.status(500).json({ error: 'An error occurred' })
-				return
-			}
-			const totalPages = Math.ceil(total / limit)
-			const skip = (page - 1) * limit
+		const total = await collection.countDocuments(query)
+		const totalPages = Math.ceil(total / limit)
+		const skip = (page - 1) * limit
 
-			collection
-				.find(query)
-				.skip(skip)
-				.limit(limit)
-				.toArray((err, users) => {
-					if (err) res.status(500).send(err)
-					if (users) res.json({ users, page, totalPages, total })
-					client.close()
-				})
-		})
-	})
+		const users = await collection
+			.find(query)
+			.skip(skip)
+			.limit(limit)
+			.toArray()
+
+		res.json({ users, page, totalPages, total })
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const getUser = (req, res) => {
+export const getUser = async (req, res) => {
 	/* 
 	#swagger.tags = ['Users']
 	#swagger.summary = 'Get user'
@@ -127,29 +80,23 @@ export const getUser = (req, res) => {
 			}
     } 
 	*/
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
+	try {
 		const { id } = req.params
-		const collection = client.db('practices').collection('users')
-		try {
-			const user = await collection.findOne({ _id: ObjectId(id) })
+		const collection = await db.collection('users')
 
-			if (!user) {
-				return res.status(404).json({ message: 'User not found' })
-			}
+		const user = await collection.findOne({ _id: ObjectId(id) })
 
-			res.json(user)
-			client.close()
-		} catch (error) {
-			handleBadRequest(error, res)
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' })
 		}
-	})
+
+		res.json(user)
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const addUser = (req, res) => {
+export const addUser = async (req, res) => {
 	/* 
 	#swagger.tags = ['Users']
 	#swagger.summary = 'Create user'
@@ -203,12 +150,7 @@ export const addUser = (req, res) => {
 		{ field: 'password', type: 'string', required: true },
 	]
 
-	client.connect(async (err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
+	try {
 		const user = req.body
 		if (Object.keys(user).length === 0) {
 			res.status(400).json({ error: 'No data provided' })
@@ -222,7 +164,8 @@ export const addUser = (req, res) => {
 				.json({ error: 'Validation errors', missingFields })
 		}
 
-		const collection = client.db('practices').collection('users')
+		const collection = await db.collection('users')
+
 		const existingUser = await collection.findOne({ email: user.email })
 		if (existingUser) {
 			return res
@@ -242,18 +185,16 @@ export const addUser = (req, res) => {
 			password: hashedPassword,
 		}
 
-		collection.insertOne(newUser, (err, result) => {
-			if (err) res.status(500).send(err)
-			if (result)
-				res.json({
-					message: 'Create user successfully',
-				})
-			client.close()
+		await collection.insertOne(newUser)
+		res.json({
+			message: 'Create user successfully',
 		})
-	})
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const updateUser = (req, res) => {
+export const updateUser = async (req, res) => {
 	/* 
 	#swagger.tags = ['Users']
 	#swagger.summary = 'Update user'
@@ -269,7 +210,6 @@ export const updateUser = (req, res) => {
 			firstName: 'Terry',
 			lastName: 'Medhurst',
 			gender: { '@enum': ['male', 'female', 'other'] },
-			email: 'example@example.com',
 			phone: '+63 791 675 8914',
 			image: 'https://example.org/example.png',
 		}
@@ -283,13 +223,6 @@ export const updateUser = (req, res) => {
 				message: 'Update user successfully'
 			}
     }
-	#swagger.responses[403] = {
-		description: 'User with this email already exists',
-		schema:
-			{
-				message: 'User with this email already exists'
-			}
-    } 
 	#swagger.responses[400] = {
 		description: 'Bad request',
 		schema:
@@ -303,12 +236,7 @@ export const updateUser = (req, res) => {
 		{ field: 'firstName', type: 'string', required: false },
 		{ field: 'email', type: 'string', required: false },
 	]
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
-
+	try {
 		const missingFields = validateFields(req.body, fieldDefinitions)
 		if (missingFields.length > 0) {
 			return res
@@ -328,23 +256,31 @@ export const updateUser = (req, res) => {
 			})
 		}
 
-		const collection = client.db('practices').collection('users')
-		collection.updateOne(
+		const collection = await db.collection('users')
+
+		const result = await collection.updateOne(
 			{ _id: ObjectId(req.params.id) },
-			{ $set: req.body },
-			(err, result) => {
-				if (err) res.status(500).send(err)
-				if (result)
-					res.json({
-						message: 'Update user successfully',
-					})
-				client.close()
-			}
+			{ $set: req.body }
 		)
-	})
+
+		if (result.modifiedCount > 0) {
+			const user = await collection.findOne({
+				_id: ObjectId(req.params.id),
+			})
+
+			res.json(user)
+		} else {
+			res.status(400).json({
+				error: 'Validation errors',
+				message: 'User not found or no changes applied',
+			})
+		}
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }
 
-export const deleteUser = (req, res) => {
+export const deleteUser = async (req, res) => {
 	/* 
   #swagger.tags = ['Users']
   #swagger.summary = 'Delete user'
@@ -375,28 +311,23 @@ export const deleteUser = (req, res) => {
   } 
   */
 
-	client.connect((err) => {
-		if (err) {
-			res.status(500).send(err)
-			return
-		}
+	try {
+		const collection = await db.collection('users')
 
-		const collection = client.db('practices').collection('users')
-		collection.deleteOne(
-			{ _id: ObjectId(req.params.id) },
-			(err, result) => {
-				if (err) res.status(500).send(err)
-				if (result.deletedCount === 0) {
-					res.status(404).json({
-						message: 'User not found',
-					})
-				} else {
-					res.json({
-						message: 'User deleted successfully',
-					})
-				}
-				client.close()
-			}
-		)
-	})
+		const result = await collection.deleteOne({
+			_id: ObjectId(req.params.id),
+		})
+
+		if (result.deletedCount === 0) {
+			res.status(404).json({
+				message: 'User not found',
+			})
+		} else {
+			res.json({
+				message: 'User deleted successfully',
+			})
+		}
+	} catch (error) {
+		handleBadRequest(error, res)
+	}
 }

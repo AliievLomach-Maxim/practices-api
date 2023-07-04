@@ -1,6 +1,6 @@
 import { Strategy as JwtStrategy } from 'passport-jwt'
 import { ExtractJwt } from 'passport-jwt'
-import { client } from '../config/dbconnect.js'
+import { db } from '../config/dbconnect.js'
 import jwt from 'jsonwebtoken'
 
 export const generateAccessToken = (id, email) => {
@@ -8,7 +8,7 @@ export const generateAccessToken = (id, email) => {
 		userId: id,
 		email: email,
 	}
-	return jwt.sign(payload, 'Hello', { expiresIn: '1d' })
+	return jwt.sign(payload, 'Hello', { expiresIn: '1m' })
 }
 
 const options = {
@@ -18,30 +18,22 @@ const options = {
 
 export default (passport) => {
 	passport.use(
-		new JwtStrategy(options, (payload, done) => {
-			client.connect(async (err) => {
-				if (err) {
-					res.status(500).send(err)
-					return
-				}
-				try {
-					const collection = client
-						.db('practices')
-						.collection('users')
+		new JwtStrategy(options, async (payload, done) => {
+			try {
+				const collection = await db.collection('users')
 
-					const user = await collection.findOne({
-						userId: payload.userId,
-					})
+				const user = await collection.findOne({
+					userId: payload.userId,
+				})
 
-					if (user) {
-						done(null, user)
-					} else {
-						done(null, false)
-					}
-				} catch (e) {
-					console.log(e)
+				if (user) {
+					done(null, user)
+				} else {
+					done(null, false)
 				}
-			})
+			} catch (e) {
+				console.log(e)
+			}
 		})
 	)
 }
