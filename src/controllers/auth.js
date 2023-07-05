@@ -215,7 +215,7 @@ export const refreshToken = async (req, res) => {
 			return res.status(401).json({ error: 'Invalid token' })
 		}
 
-		const newToken = generateAccessToken(user._id, email)
+		const newToken = generateAccessToken(user.userId, email)
 
 		return res.json({
 			token: newToken,
