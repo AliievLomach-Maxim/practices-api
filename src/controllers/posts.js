@@ -184,7 +184,7 @@ export const getPostsByIdUser = async (req, res) => {
 		const { id } = req.params
 		const collection = await db.collection('posts')
 
-		const posts = collection.find({ userId: ObjectId(id) }).toArray()
+		const posts = await collection.find({ userId: ObjectId(id) }).toArray()
 		res.json({ posts })
 	} catch (error) {
 		handleBadRequest(error, res)

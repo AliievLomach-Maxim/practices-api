@@ -41,7 +41,7 @@ export const addComments = async (req, res) => {
 		{ field: 'userId', type: 'string', required: true },
 	]
 	try {
-		const postId = req.params.id
+		const postId = ObjectId(req.params.id)
 		const comment = req.body
 		if (Object.keys(comment).length === 0) {
 			res.status(400).json({ error: 'No data provided' })
@@ -65,7 +65,7 @@ export const addComments = async (req, res) => {
 			firstName: user.firstName,
 			lastName: user.lastName,
 			image: user.image,
-			userId: user._id,
+			userId: ObjectId(user._id),
 		}
 		const collection = await db.collection('comments')
 

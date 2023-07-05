@@ -204,8 +204,6 @@ export const refreshToken = async (req, res) => {
 	}
 
 	try {
-		const token = authorizationHeader.split(' ')[1]
-
 		const email = getUserEmailFromToken(authorizationHeader)
 
 		const collection = await db.collection('users')
