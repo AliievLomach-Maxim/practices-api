@@ -3,6 +3,7 @@ import passport from 'passport'
 import swaggerUi from 'swagger-ui-express'
 import fs from 'fs'
 import path from 'path'
+import cron from 'node-cron'
 
 import usersRoutes from './src/routes/users.js'
 import authRoutes from './src/routes/auth.js'
@@ -47,6 +48,16 @@ app.use('/auth', authRoutes)
 app.use('/users', usersRoutes)
 app.use('/posts', postsRoutes)
 app.use('/comments', commentsRoutes)
+
+cron.schedule('0 0 * * *', async () => {
+	try {
+		const collection = await db.collection('comments')
+		await collection.deleteMany({})
+		console.log('Field cleared successfully.')
+	} catch (error) {
+		console.error('Error clearing field:', error)
+	}
+})
 
 let db
 
